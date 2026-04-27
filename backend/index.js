@@ -17,9 +17,12 @@ const io = new Server(server, {
   },
 });
 
-app.get("/health", (req, res) => {
-  res.status(200).json({ status: "ok" });
-});
+const healthHandler = (req, res) => {
+  res.status(200).json({ ok: true });
+};
+
+app.get("/health", healthHandler);
+app.get("/api/health", healthHandler);
 
 
 
