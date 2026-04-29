@@ -6,7 +6,9 @@ import MessageList from "./components/MessageList";
 import MessageInput from "./components/MessageInput";
 import { MessageSquare, LogOut } from "lucide-react";
 
-const socket = io(import.meta.env.VITE_SOCKET_URL, {
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:5000";
+
+const socket = io(SOCKET_URL, {
   transports: ["websocket"],
   reconnectionAttempts: 5,
   reconnectionDelay: 1000,
@@ -38,7 +40,19 @@ function App() {
     // Fetch message history on mount
     const fetchHistory = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/messages`);
+        const apiUrl = import.meta.env.VITE_API_URL;
+        
+        if (!apiUrl) {
+          console.warn("VITE_API_URL is not defined in environment variables. Falling back to localhost:5000");
+        }
+
+        const base = apiUrl || "http://localhost:5000/api";
+        const res = await fetch(`${base}/messages`);
+        
+        if (!res.ok) {
+          throw new Error(`Server responded with ${res.status}`);
+        }
+        
         const data = await res.json();
         setMessages(data);
       } catch (err) {
