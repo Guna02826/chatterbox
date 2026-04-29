@@ -1,119 +1,78 @@
-# 🗨️ Chatterbox – Real-Time Chat App
+# Chatterbox 💬
 
-🚀 A real-time chat application built using **React**, **Node.js**, and **Socket.io** for instant messaging. Designed as a resume-ready MERN-style project with real-time WebSocket functionality.
+A premium, real-time chat application built for modern web experiences. This project demonstrates a full-stack implementation of real-time communication using Socket.io, React, and MongoDB.
 
----
+![Chatterbox Preview](Screenshot.png)
 
-## ✨ Features
+## 🚀 Key Features
 
-- 🔥 Real-time messaging via **WebSockets (Socket.io)**
-- ⚡ Lightweight **Express.js backend**
-- 🎨 Responsive **React frontend** with live updates
-- 🧠 Username support (set your name and chat instantly)
-- 🛠 Simple and clean UI
+- **Real-Time Messaging**: Instant message delivery using WebSockets.
+- **Persistent History**: Chat history is saved to MongoDB and loaded on entry.
+- **Live User Tracking**: See who's currently online with a dedicated sidebar.
+- **Typing Indicators**: Visual feedback when someone is typing.
+- **Premium UI/UX**:
+  - Glassmorphism design system.
+  - Smooth animations with Framer Motion.
+  - Responsive layout (Mobile-friendly).
+  - Modern typography and color palette.
+- **System Notifications**: Automated alerts for user join/leave events.
 
----
+## 🛠️ Tech Stack
 
-## 📌 Tech Stack
+- **Frontend**: React 19, Vite, Tailwind CSS 4, Framer Motion, Lucide Icons.
+- **Backend**: Node.js, Express, Socket.io.
+- **Database**: MongoDB (Mongoose ODM).
+- **Tooling**: ESLint, Dotenv, Nodemon.
 
-- **Frontend**: React, Vite, Socket.io-client
-- **Backend**: Node.js, Express, Socket.io
-- **Deployment**: Render (Backend), Vercel/Netlify (Frontend)
+## 📦 Installation & Setup
 
----
+### Prerequisites
+- Node.js (v18+)
+- MongoDB (Running locally or Atlas)
 
-## 📂 Project Structure
-
-```
-chatterbox/
-├── frontend/        # React + Vite frontend
-│   ├── src/
-│   │   ├── App.jsx
-│   │   ├── main.jsx
-│   │   ├── App.css
-│   ├── package.json
-│   └── vite.config.js
-├── backend/         # Express + Socket.io backend
-│   ├── index.js
-│   ├── package.json
-├── README.md
-```
-
----
-
-## 🚀 Getting Started
-
-### 1️⃣ Clone the Repository
-
+### 1. Clone the repository
 ```bash
 git clone https://github.com/Guna02826/chatterbox.git
 cd chatterbox
 ```
 
-### 2️⃣ Start the Backend
-
+### 2. Backend Setup
 ```bash
 cd backend
 npm install
-node index.js
+```
+Create a `.env` file in the `backend` folder:
+```env
+PORT=5000
+MONGO_URI=mongodb://localhost:27017/chatterbox
+CLIENT_URL=http://localhost:5173
+```
+Start the server:
+```bash
+npm start
 ```
 
-### 3️⃣ Start the Frontend
-
+### 3. Frontend Setup
 ```bash
 cd ../frontend
 npm install
+```
+Create a `.env` file in the `frontend` folder:
+```env
+VITE_SOCKET_URL=http://localhost:5000
+VITE_API_URL=http://localhost:5000/api
+```
+Start the development server:
+```bash
 npm run dev
 ```
 
-### 4️⃣ Open in Browser
+## 📐 Architecture
 
-Visit: [http://localhost:5173](http://localhost:5173)  
-Open multiple tabs to test real-time messaging.
+Chatterbox follows a decoupled architecture where the frontend and backend communicate via a combination of RESTful APIs (for history) and WebSockets (for real-time events).
 
----
-
-## 📸 Screenshots
-
-![Chat UI Screenshot](./screenshot.png "Chatterbox Screenshot")
+- **Backend**: Manages socket connections, broadcasts events, and handles persistence logic.
+- **Frontend**: A modular React application using functional components and hooks for state management and side effects.
 
 ---
-
-## 🌐 Deployment
-
-### Backend (Render)
-
-- Deploy the `backend` folder on [Render](https://render.com)
-- Ensure WebSocket and CORS are enabled
-
-### Frontend (Vercel/Netlify)
-
-```bash
-cd frontend
-npm run build
-```
-
-- Deploy the `dist/` folder to [Vercel](https://vercel.com) or [Netlify](https://netlify.com)
-
----
-
-## 🛠 Future Enhancements
-
-- 💾 MongoDB integration for persistent chat history
-- 🔐 User authentication (login/register)
-- ✍️ Typing indicators
-- ✅ Read receipts
-- 👥 Group chats & DMs
-
----
-
-## 📜 License
-
-This project is licensed under the **MIT License**.
-
----
-
-## ⭐ Support & Feedback
-
-- Found a bug? [Open an issue](https://github.com/Guna02826/chatterbox/issues)
-- Like the project? [Give it a star ⭐ on GitHub](https://github.com/Guna02826/chatterbox)
+Built with ❤️ by [Guna](https://github.com/Guna02826)

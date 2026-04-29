@@ -1,6 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { io } from "socket.io-client";
-import "./App.css";
+import UserLogin from "./components/UserLogin";
+import Sidebar from "./components/Sidebar";
+import MessageList from "./components/MessageList";
+import MessageInput from "./components/MessageInput";
+import { MessageSquare, LogOut } from "lucide-react";
 
 const socket = io(import.meta.env.VITE_SOCKET_URL, {
   transports: ["websocket"],
@@ -10,102 +14,107 @@ const socket = io(import.meta.env.VITE_SOCKET_URL, {
 
 function App() {
   const [messages, setMessages] = useState([]);
-  const [message, setMessage] = useState("");
   const [username, setUsername] = useState("");
-  const [isUsernameSet, setIsUsernameSet] = useState(false);
-
-  const messagesEndRef = useRef(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [onlineUsers, setOnlineUsers] = useState([]);
+  const [typingUsers, setTypingUsers] = useState([]);
 
   useEffect(() => {
-    const handleMessageReceive = (data) => {
-      setMessages((prev) => [...prev, data]);
+    // Socket Listeners
+    const onReceiveMessage = (data) => setMessages((prev) => [...prev, data]);
+    const onUserList = (users) => setOnlineUsers(users);
+    const onUserTyping = ({ username: typingUser, isTyping }) => {
+      setTypingUsers((prev) => 
+        isTyping 
+          ? [...new Set([...prev, typingUser])] 
+          : prev.filter(u => u !== typingUser)
+      );
     };
 
-    socket.on("receiveMessage", handleMessageReceive);
+    socket.on("receiveMessage", onReceiveMessage);
+    socket.on("userList", onUserList);
+    socket.on("userTyping", onUserTyping);
+
+    // Fetch message history on mount
+    const fetchHistory = async () => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/messages`);
+        const data = await res.json();
+        setMessages(data);
+      } catch (err) {
+        console.error("Failed to fetch history:", err);
+      }
+    };
+    fetchHistory();
 
     return () => {
-      socket.off("receiveMessage", handleMessageReceive);
+      socket.off("receiveMessage", onReceiveMessage);
+      socket.off("userList", onUserList);
+      socket.off("userTyping", onUserTyping);
     };
   }, []);
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
-  const sendMessage = () => {
-    if (message.trim()) {
-      socket.emit("sendMessage", { username, message });
-      setMessage("");
-    }
+  const handleLogin = (name) => {
+    setUsername(name);
+    setIsLoggedIn(true);
+    socket.emit("join", name);
   };
 
-  const setUser = () => {
-    if (username.trim()) {
-      socket.emit("setUsername", username);
-      setIsUsernameSet(true);
-    }
+  const handleSendMessage = (message) => {
+    socket.emit("sendMessage", { username, message });
+    socket.emit("typing", { username, isTyping: false });
   };
+
+  const handleTyping = (isTyping) => {
+    socket.emit("typing", { username, isTyping });
+  };
+
+  const handleLogout = () => {
+    window.location.reload(); // Simple way to reset state and disconnect
+  };
+
+  if (!isLoggedIn) {
+    return <UserLogin onLogin={handleLogin} />;
+  }
 
   return (
-    <div className="bg-blue-50 text-gray-900 min-h-screen flex items-center justify-center px-4">
-      <div className="max-w-xl w-full text-center space-y-6">
-        <h1 className="text-5xl font-bold text-blue-700">Real-Time Chat App</h1>
+    <div className="flex h-screen bg-slate-100 font-sans antialiased text-slate-900">
+      <Sidebar users={onlineUsers} currentUser={username} />
 
-        {!isUsernameSet ? (
-          <div className="space-y-4">
-            <input
-              type="text"
-              value={username}
-              className="w-full border border-blue-300 focus:ring-2 focus:ring-blue-500 p-3 rounded-lg shadow-sm transition"
-              placeholder="Enter your username"
-              onChange={(e) => setUsername(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && setUser()}
-            />
-            <button
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition"
-              onClick={setUser}
-              disabled={!username.trim()}
-            >
-              Start Chatting
-            </button>
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Header */}
+        <header className="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-6 shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="md:hidden bg-blue-600 p-2 rounded-lg">
+              <MessageSquare className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h1 className="font-bold text-lg leading-tight">General Chat</h1>
+              <p className="text-xs text-green-500 font-medium flex items-center gap-1">
+                <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+                {onlineUsers.length} active members
+              </p>
+            </div>
           </div>
-        ) : (
-          <>
-            <div
-              className="messages-container bg-white rounded-lg shadow p-5 max-h-96 overflow-y-auto text-left space-y-3"
-              aria-live="polite"
-            >
-              {messages.map((msg, index) => (
-                <p
-                  key={index}
-                  className="bg-blue-100 text-sm p-3 rounded-lg w-fit max-w-xs"
-                >
-                  <strong className="text-blue-700">{msg.username}:</strong>{" "}
-                  {msg.message}
-                </p>
-              ))}
-              <div ref={messagesEndRef} />
-            </div>
+          
+          <button 
+            onClick={handleLogout}
+            className="flex items-center gap-2 text-slate-400 hover:text-red-500 transition-colors text-sm font-medium"
+          >
+            <span>Exit</span>
+            <LogOut className="w-4 h-4" />
+          </button>
+        </header>
 
-            <div className="flex gap-3 items-center">
-              <input
-                type="text"
-                value={message}
-                className="flex-1 border border-blue-300 focus:ring-2 focus:ring-blue-500 p-3 rounded-lg shadow-sm transition"
-                placeholder="Type your message..."
-                onChange={(e) => setMessage(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-              />
-              <button
-                className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-lg transition"
-                onClick={sendMessage}
-                disabled={!message.trim()}
-              >
-                Send
-              </button>
-            </div>
-          </>
-        )}
+        {/* Chat Area */}
+        <MessageList 
+          messages={messages} 
+          currentUser={username} 
+          typingUsers={typingUsers.filter(u => u !== username)} 
+        />
+
+        {/* Input Area */}
+        <MessageInput onSendMessage={handleSendMessage} onTyping={handleTyping} />
       </div>
     </div>
   );
