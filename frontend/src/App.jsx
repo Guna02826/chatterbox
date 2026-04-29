@@ -43,7 +43,7 @@ function App() {
         const apiUrl = import.meta.env.VITE_API_URL;
         
         if (!apiUrl) {
-          console.warn("VITE_API_URL is not defined in environment variables. Falling back to localhost:5000");
+          console.warn("VITE_API_URL is not defined in environment variables. Falling back to http://localhost:5000/api");
         }
 
         const base = apiUrl || "http://localhost:5000/api";
