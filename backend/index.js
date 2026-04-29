@@ -40,20 +40,39 @@ const io = new Server(server, {
 // MongoDB Connection
 mongoose
   .connect(MONGO_URI)
-  .then(() => console.log("Connected to MongoDB"))
-  .catch((err) => console.error("MongoDB connection error:", err));
+  .then(() => console.log("✅ Connected to MongoDB"))
+  .catch((err) => {
+    console.error("❌ MongoDB connection error:", err.message);
+    // In production, we want to know if the URI is the fallback or the intended one
+    if (MONGO_URI.includes("localhost") && process.env.NODE_ENV === "production") {
+      console.error("CRITICAL: Backend is running in production but using localhost MongoDB URI!");
+    }
+  });
 
 // Routes
 app.get("/api/health", (req, res) => {
-  res.status(200).json({ status: "ok", uptime: process.uptime() });
+  const dbStatus = mongoose.connection.readyState === 1 ? "connected" : "disconnected";
+  res.status(200).json({ 
+    status: "ok", 
+    database: dbStatus,
+    uptime: process.uptime() 
+  });
 });
 
 // Fetch message history
 app.get("/api/messages", async (req, res) => {
+  if (mongoose.connection.readyState !== 1) {
+    return res.status(503).json({ 
+      error: "Database connection not established",
+      details: "The server is unable to connect to MongoDB. Check MONGO_URI environment variable."
+    });
+  }
+
   try {
     const messages = await Message.find().sort({ createdAt: -1 }).limit(50);
     res.json(messages.reverse());
   } catch (error) {
+    console.error("Error fetching messages:", error);
     res.status(500).json({ error: "Failed to fetch messages" });
   }
 });

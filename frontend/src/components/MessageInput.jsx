@@ -27,13 +27,6 @@ export default function MessageInput({ onSendMessage, onTyping }) {
   return (
     <div className="p-4 bg-white border-t border-slate-200">
       <form onSubmit={handleSubmit} className="max-w-4xl mx-auto flex items-center gap-2">
-        {/* <button 
-          type="button" 
-          className="p-3 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors"
-        >
-          <Plus className="w-5 h-5" />
-        </button> */}
-        
         <div className="flex-1 relative">
           <input
             type="text"
@@ -42,12 +35,6 @@ export default function MessageInput({ onSendMessage, onTyping }) {
             placeholder="Type a message..."
             className="w-full bg-slate-100 border-none rounded-2xl py-3 pl-4 pr-12 text-slate-700 focus:ring-2 focus:ring-blue-500 transition-all outline-none"
           />
-          {/* <button 
-            type="button"
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-amber-500 transition-colors"
-          >
-            <Smile className="w-5 h-5" />
-          </button> */}
         </div>
 
         <button
